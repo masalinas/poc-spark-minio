@@ -50,14 +50,13 @@ public class App
         ds.cache();
 
         // Create a temporary view of the DataFrame
-        ds.createOrReplaceTempView("address");
+        ds.createOrReplaceTempView("table");
         
         // SQL Dataframe
         Dataset<Row> dsSQL= sparkSession.sql("""
-        		  SELECT name,
-        		         surname AS lastname,
+        		  SELECT concat(name, ' ', surname) as name,
         		         address
-        		  FROM address
+        		  FROM table
         		  WHERE name = 'John'
         		""");
         
