@@ -21,13 +21,18 @@ public class App
 		        .master("local[*]")
 	        .getOrCreate();
         
-        Dataset<Row> dataset = sparkSession.read().format("csv").option("header", "false").load("s3a://samples/addresses.csv");
+        Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
         
-        System.out.println("Recovering: " + dataset.count());
-        
-        System.out.println("CSV Data: " + dataset.count());
-        dataset.foreach(row -> {
+        System.out.println("CSV Data: " + ds.count());
+        ds.foreach(row -> {
         	System.out.println(row.toString());
-        });  
+        }); 
+        
+        Dataset<Row> dsFiltered = ds.select("name", "surname"); 
+        
+        System.out.println("CSV Data: " + dsFiltered.count());
+        dsFiltered.foreach(row -> {
+        	System.out.println(row.toString());
+        }); 
     }
 }
