@@ -1,6 +1,10 @@
 package io.oferto;
 
 import org.apache.spark.sql.SparkSession;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -23,7 +27,14 @@ public class App
         
         System.out.println("Sample 01: get all CSV rows ...");
         System.out.println("");
-        Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
+        
+        // Load csv resource from minio
+        Map<String, String> optionsMap = new HashMap<String, String>();
+        optionsMap.put("delimiter", ",");
+        optionsMap.put("header", "true");
+        
+        //Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
+        Dataset<Row> ds = sparkSession.read().options(optionsMap).csv("s3a://samples/addresses.csv");
         
         // Get all Dataframe
         System.out.println("CSV Rows: " + ds.count());
