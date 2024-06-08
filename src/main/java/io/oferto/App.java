@@ -25,13 +25,17 @@ public class App
         System.out.println("");
         Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
         
+        // Get all Dataframe
         System.out.println("CSV Rows: " + ds.count());
+        
         ds.foreach(row -> {
         	System.out.println(row.toString());
         }); 
                         
         System.out.println("Sample 02: filter CSV rows ...");
         System.out.println("");
+        
+        // Select Dataframe
         Dataset<Row> dsFiltered = ds.select("name", "surname"); 
         
         System.out.println("CSV Rows: " + dsFiltered.count());
@@ -41,12 +45,14 @@ public class App
         
         System.out.println("Sample 03: SQL CSV rows ...");
         System.out.println("");
+        
         // Cache the DataFrame
         ds.cache();
 
         // Create a temporary view of the DataFrame
         ds.createOrReplaceTempView("address");
         
+        // SQL Dataframe
         Dataset<Row> dsSQL= sparkSession.sql("""
         		  SELECT name,
         		         surname AS lastname,
