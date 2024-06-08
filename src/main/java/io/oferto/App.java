@@ -21,17 +21,42 @@ public class App
 		        .master("local[*]")
 	        .getOrCreate();
         
+        System.out.println("Sample 01: get all CSV rows ...");
+        System.out.println("");
         Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
         
-        System.out.println("CSV Data: " + ds.count());
+        System.out.println("CSV Rows: " + ds.count());
         ds.foreach(row -> {
         	System.out.println(row.toString());
         }); 
-        
+                        
+        System.out.println("Sample 02: filter CSV rows ...");
+        System.out.println("");
         Dataset<Row> dsFiltered = ds.select("name", "surname"); 
         
-        System.out.println("CSV Data: " + dsFiltered.count());
+        System.out.println("CSV Rows: " + dsFiltered.count());
         dsFiltered.foreach(row -> {
+        	System.out.println(row.toString());
+        }); 
+        
+        System.out.println("Sample 03: SQL CSV rows ...");
+        System.out.println("");
+        // Cache the DataFrame
+        ds.cache();
+
+        // Create a temporary view of the DataFrame
+        ds.createOrReplaceTempView("address");
+        
+        Dataset<Row> dsSQL= sparkSession.sql("""
+        		  SELECT name,
+        		         surname AS lastname,
+        		         address
+        		  FROM address
+        		  WHERE name = 'John'
+        		""");
+        
+        System.out.println("CSV Rows: " + dsSQL.count());
+        dsSQL.foreach(row -> {
         	System.out.println(row.toString());
         }); 
     }
