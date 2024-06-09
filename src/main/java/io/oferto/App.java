@@ -27,8 +27,10 @@ public class App
 			        .config("fs.s3a.attempts.maximum", "1")
 			        .config("fs.s3a.connection.establish.timeout", "5000")
 			        .config("fs.s3a.connection.timeout", "10000")
-		        .master("local")
+		        .master("local[*]")
 	        .getOrCreate();
+        
+        System.out.println(sparkSession.sparkContext().deployMode());
         
         System.out.println("Sample 01: get all CSV rows ...");
         System.out.println("");
