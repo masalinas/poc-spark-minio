@@ -1,28 +1,33 @@
 package io.oferto;
 
-import org.apache.spark.sql.SparkSession;
-
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 public class App 
 {
-    public static void main( String[] args ) {          
+    public static void main( String[] args ) throws IllegalArgumentException, IOException, URISyntaxException {          
         SparkSession sparkSession = SparkSession
 	        .builder()
 		        .appName("Minio SQL App")
+		        	.config("fs.s3a.connection.ssl.enabled", "false")
+			        .config("fs.s3a.endpoint", "localhost:9010")
 			        .config("fs.s3a.access.key", "admin")
 			        .config("fs.s3a.secret.key", "password")
-			        .config("fs.s3a.endpoint", "localhost:9010")
-			        .config("fs.s3a.connection.ssl.enabled", "false")
 			        .config("fs.s3a.path.style.access", "true")
 			        .config("fs.s3a.attempts.maximum", "1")
 			        .config("fs.s3a.connection.establish.timeout", "5000")
 			        .config("fs.s3a.connection.timeout", "10000")
-		        .master("local[*]")
+		        .master("local")
 	        .getOrCreate();
         
         System.out.println("Sample 01: get all CSV rows ...");
@@ -75,5 +80,21 @@ public class App
         dsSQL.foreach(row -> {
         	System.out.println(row.toString());
         }); 
+        
+        System.out.println("Sample 04: save CSV dataset ...");
+        System.out.println("");
+        
+        dsSQL.write().format("csv").options(optionsMap).mode("Overwrite").save("s3a://samples/addresses_filtered.csv");
+        
+        FileSystem fileSystem = FileSystem.get(new URI("s3a://samples"), sparkSession.sparkContext().hadoopConfiguration());
+        String fileName = fileSystem.globStatus(new Path("/addresses_filtered.csv/part*"))[0].getPath().getName();
+        		
+        fileSystem.delete(new Path("/addresses_filtered_final.csv"), true);
+        
+        fileSystem.rename(
+        		new Path("/addresses_filtered.csv/" + fileName), 
+        		new Path("/addresses_filtered_final.csv"));
+        
+        fileSystem.delete(new Path("/addresses_filtered.csv"), true);
     }
 }
