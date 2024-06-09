@@ -39,7 +39,8 @@ public class App
         optionsMap.put("header", "true");
         
         //Dataset<Row> ds = sparkSession.read().format("csv").option("header", "true").load("s3a://samples/addresses.csv");
-        Dataset<Row> ds = sparkSession.read().options(optionsMap).csv("s3a://samples/addresses.csv");
+        Dataset<Row> ds = sparkSession.read().format("csv").options(optionsMap).load("s3a://samples/addresses.csv");
+        //Dataset<Row> ds = sparkSession.read().options(optionsMap).csv("s3a://samples/addresses.csv");
         
         // Get all Dataframe
         System.out.println("CSV Rows: " + ds.count());
